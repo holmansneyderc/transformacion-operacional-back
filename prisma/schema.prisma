@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Rol {
+  id           Int      @id @default(autoincrement())
+  nombreRol    String   @map("nombre_rol")
+  descripcion  String
+
+  usuarios     Usuario[]
+
+  @@map("rol")
+}
+
+model Usuario {
+  id        Int    @id @default(autoincrement())
+  nombre    String
+  correo    String
+  cedula    String
+  celular   String
+
+  rolId     Int    @map("rol_id")
+  rol       Rol    @relation(fields: [rolId], references: [id])
+
+  @@index([rolId], name: "idx_usuario_rol")
+  @@map("usuario")
+}
