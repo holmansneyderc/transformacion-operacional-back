@@ -1,78 +1,82 @@
 export interface Provider {
   id: number;
-  informacionGeneral: InformacionGeneral;
-  representanteLegal: RepresentanteLegal;
-  gerente?: Gerente;
-  sucursales: Sucursal[];
-  habilidades: Habilidades;
-  documentos: Documentos;
-  estadoProveedor: EstadoProveedor;
-  historialEstados: HistorialEstado[];
-}
-
-export interface InformacionGeneral {
-  razonSocial: string;
+  razon_social: string;
   nit: string;
-  direccionCorrespondencia: string;
-  lineaNegocio: string[];
-  tipoPersona: 'Natural' | 'Jurídica';
-  actividadEconomicaRues: string | string[];
-  correoEmpresa: string;
+  correo: string;
+  estado_id: number;
+  lineas_negocio: LineaNegocio[];
+  actividades_economicas: ActividadEconomica[];
+  contactos: Contacto[];
+  sucursales: Sucursal[];
+  habilidades: Habilidad[];
+  documentos: DocumentoProveedor[];
+  estado_actual: EstadoDetalle;
+  historial_estados: HistorialEstado[];
 }
 
-export interface RepresentanteLegal {
+export interface LineaNegocio {
+  id: number;
   nombre: string;
-  tipoDocumento: string;
-  numeroDocumento: string;
-  celular: string;
-  correo: string;
-  esGerente: boolean;
 }
 
-export interface Gerente {
+export interface ActividadEconomica {
+  id: number;
+  codigo_ciiu: string;
   nombre: string;
-  tipoDocumento: string;
-  numeroDocumento: string;
+}
+
+export interface Contacto {
+  id?: number;
+  nombre: string;
+  tipo_documento: string;
+  documento: string;
   celular: string;
-  correo: string;
+  email: string;
+  cargo: string;
+  es_gerente: boolean;
 }
 
 export interface Sucursal {
-  departamento: string;
-  ciudad: string;
+  id?: number;
   direccion: string;
-  telefonosContacto: string[];
+  ciudad_id: number;
+  ciudad_nombre: string;
+  departamento_nombre: string;
+  telefonos: SucursalTelefono[];
 }
 
-export interface Habilidades {
-  especiales: string[];
-  generales: string[];
+export interface SucursalTelefono {
+  id?: number;
+  numero: string;
 }
 
-export interface Documentos {
-  fechaContrato: string;
-  fechaActivacion: string;
-  contrato: string;
-  sagrilaft: string;
-  cartaTratamientoDatos: string;
-  sst: string;
-  siab: boolean;
-  correoLider: string;
+export interface Habilidad {
+  id: number;
+  nombre: string;
+  categoria: string;
 }
 
-export type EstadoProveedorTipo = 'ACTIVO' | 'SUSPENDIDO' | 'RETIRADO';
+export interface DocumentoProveedor {
+  documento_id: number;
+  nombre: string;
+  url: string;
+}
 
-export interface EstadoProveedor {
-  estado: EstadoProveedorTipo;
-  subRazon?: string | null;
-  fechaEstado: string;
-  fechaReactivacion?: string | null;
+export type EstadoNombre = 'ACTIVO' | 'SUSPENDIDO' | 'RETIRADO';
+
+export interface EstadoDetalle {
+  id: number;
+  nombre: EstadoNombre;
+  sub_razon?: string | null;
+  fecha_movimiento: string;
+  fecha_reactivacion?: string | null;
 }
 
 export interface HistorialEstado {
-  estado: EstadoProveedorTipo;
-  subRazon?: string | null
-  fecha: string;
-  fechaReactivacion?: string;
+  id: number;
+  estado_id: number;
+  nombre_estado: EstadoNombre;
+  sub_razon?: string | null;
+  fecha_movimiento: string;
+  usuario_id: number;
 }
-
