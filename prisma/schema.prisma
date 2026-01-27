@@ -3,29 +3,248 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
-model Rol {
-  id           Int      @id @default(autoincrement())
-  nombreRol    String   @map("nombre_rol")
-  descripcion  String
-
-  usuarios     Usuario[]
-
-  @@map("rol")
+model rol {
+  id          Int       @id @default(autoincrement()) @db.SmallInt
+  nombre      String    @db.VarChar(50)
+  descripcion String    @db.Text
+  usuarios    usuario[]
 }
 
-model Usuario {
-  id        Int    @id @default(autoincrement())
-  nombre    String
-  correo    String
-  cedula    String
-  celular   String
+model estado {
+  id                         Int                          @id @default(autoincrement()) @db.SmallInt
+  nombre                     String                       @unique @db.VarChar(50)
+  proveedores                proveedor[]
+  tecnicos                   tecnico[]
+  historico_estado_proveedor historico_estado_proveedor[]
+}
 
-  rolId     Int    @map("rol_id")
-  rol       Rol    @relation(fields: [rolId], references: [id])
+model linea_negocio {
+  id               Int                @id @default(autoincrement()) @db.SmallInt
+  nombre           String             @db.VarChar(30)
+  proveedor_lineas proveedor_linea[]
+}
 
-  @@index([rolId], name: "idx_usuario_rol")
-  @@map("usuario")
+model departamento {
+  id       Int      @id @default(autoincrement()) @db.SmallInt
+  nombre   String   @db.VarChar(100)
+  ciudades ciudad[]
+}
+
+model ciudad {
+  id              Int          @id @default(autoincrement())
+  nombre          String       @db.VarChar(100)
+  departamento_id Int          @db.SmallInt
+  departamento    departamento @relation(fields: [departamento_id], references: [id])
+  sucursales      sucursal[]
+
+  @@index([departamento_id], map: "idx_ciudad_departamento")
+}
+
+model documento {
+  id                  Int                   @id @default(autoincrement()) @db.SmallInt
+  nombre              String                @unique @db.VarChar(100)
+  descripcion         String?               @db.Text
+  documento_tecnico   documento_tecnico[]
+  documento_proveedor documento_proveedor[]
+}
+
+model habilidad {
+  id                 Int                  @id @default(autoincrement())
+  nombre             String               @unique @db.VarChar(100)
+  categoria          String               @db.VarChar(100)
+  tecnico_habilidad  tecnico_habilidad[]
+  scores             score[]
+  historico_habilidad historico_habilidad[]
+}
+
+model habilidad_especial {
+  id                          Int                           @id @default(autoincrement()) @db.SmallInt
+  nombre                      String                        @unique @db.VarChar(100)
+  descripcion                 String?                       @db.Text
+  proveedor_habilidad_especial proveedor_habilidad_especial[]
+}
+
+model actividad_economica {
+  id                  Int                   @id @default(autoincrement()) @db.SmallInt
+  codigo_ciiu         String?               @unique @db.VarChar(10)
+  nombre              String                @db.VarChar(150)
+  proveedor_actividad proveedor_actividad[]
+}
+
+model usuario {
+  id                  Int                   @id @default(autoincrement())
+  nombre              String                @db.VarChar(100)
+  correo              String                @unique @db.VarChar(150)
+  cedula              String                @unique @db.VarChar(20)
+  celular             String                @db.VarChar(20)
+  rol_id              Int                   @db.SmallInt
+  rol                 rol                   @relation(fields: [rol_id], references: [id])
+  tecnico             tecnico?
+  historico_habilidad historico_habilidad[]
+  historico_estado_proveedor historico_estado_proveedor[]
+
+  @@index([rol_id], map: "idx_usuario_rol")
+}
+
+model proveedor {
+  id                          Int                           @id @default(autoincrement())
+  razon_social                String                        @unique @db.VarChar(150)
+  nit                         String                        @unique @db.VarChar(20)
+  correo                      String                        @db.VarChar(150)
+  estado_id                   Int                           @db.SmallInt
+  estado                      estado                        @relation(fields: [estado_id], references: [id])
+  contactos                   contacto_proveedor[]
+  sucursales                  sucursal[]
+  lineas                      proveedor_linea[]
+  actividades                 proveedor_actividad[]
+  habilidades_especiales      proveedor_habilidad_especial[]
+  scores                      score[]
+  documentos                  documento_proveedor[]
+  historico_estado_proveedor  historico_estado_proveedor[]
+}
+
+model contacto_proveedor {
+  id             Int       @id @default(autoincrement())
+  proveedor_id   Int
+  nombre         String    @db.VarChar(150)
+  tipo_documento String    @db.VarChar(10)
+  documento      String    @db.VarChar(20)
+  celular        String    @db.VarChar(20)
+  email          String    @db.VarChar(150)
+  cargo          String    @db.VarChar(50)
+  es_gerente     Boolean   @default(false)
+  proveedor      proveedor @relation(fields: [proveedor_id], references: [id])
+}
+
+model sucursal {
+  id           Int                 @id @default(autoincrement()) @db.SmallInt
+  direccion    String              @db.VarChar(200)
+  ciudad_id    Int
+  proveedor_id Int
+  ciudad       ciudad              @relation(fields: [ciudad_id], references: [id])
+  proveedor    proveedor           @relation(fields: [proveedor_id], references: [id])
+  telefonos    sucursal_telefono[]
+  tecnicos     tecnico[]
+
+  @@index([proveedor_id], map: "idx_sucursal_proveedor")
+}
+
+model tecnico {
+  id                Int                 @id @default(autoincrement())
+  disponibilidad    String              @db.VarChar(50)
+  causa_rechazo     String?             @db.VarChar(255)
+  usuario_id        Int                 @unique
+  sucursal_id       Int                 @db.SmallInt
+  estado_id         Int                 @db.SmallInt
+  usuario           usuario             @relation(fields: [usuario_id], references: [id])
+  sucursal          sucursal            @relation(fields: [sucursal_id], references: [id])
+  estado            estado              @relation(fields: [estado_id], references: [id])
+  documentos        documento_tecnico[]
+  habilidades       tecnico_habilidad[]
+  historico_habilidad historico_habilidad[]
+}
+
+model sucursal_telefono {
+  id          Int      @id @default(autoincrement())
+  sucursal_id Int      @db.SmallInt
+  numero      String   @db.VarChar(20)
+  sucursal    sucursal @relation(fields: [sucursal_id], references: [id], onDelete: Cascade)
+}
+
+model proveedor_linea {
+  proveedor_id Int
+  linea_id     Int           @db.SmallInt
+  proveedor    proveedor     @relation(fields: [proveedor_id], references: [id], onDelete: Cascade)
+  linea        linea_negocio @relation(fields: [linea_id], references: [id], onDelete: Cascade)
+
+  @@id([proveedor_id, linea_id])
+}
+
+model proveedor_actividad {
+  proveedor_id Int
+  actividad_id Int                 @db.SmallInt
+  proveedor    proveedor           @relation(fields: [proveedor_id], references: [id], onDelete: Cascade)
+  actividad    actividad_economica @relation(fields: [actividad_id], references: [id], onDelete: Cascade)
+
+  @@id([proveedor_id, actividad_id])
+}
+
+model proveedor_habilidad_especial {
+  proveedor_id          Int
+  habilidad_especial_id Int                @db.SmallInt
+  proveedor             proveedor          @relation(fields: [proveedor_id], references: [id], onDelete: Cascade)
+  habilidad_especial    habilidad_especial @relation(fields: [habilidad_especial_id], references: [id], onDelete: Cascade)
+
+  @@id([proveedor_id, habilidad_especial_id])
+}
+
+model tecnico_habilidad {
+  tecnico_id       Int
+  habilidad_id     Int
+  estado_habilidad String    @db.VarChar(50)
+  tecnico          tecnico   @relation(fields: [tecnico_id], references: [id])
+  habilidad        habilidad @relation(fields: [habilidad_id], references: [id])
+
+  @@id([tecnico_id, habilidad_id])
+}
+
+model score {
+  proveedor_id Int
+  habilidad_id Int
+  score        Int       @default(10) @db.SmallInt
+  proveedor    proveedor @relation(fields: [proveedor_id], references: [id])
+  habilidad    habilidad @relation(fields: [habilidad_id], references: [id])
+
+  @@id([proveedor_id, habilidad_id])
+}
+
+model documento_tecnico {
+  tecnico_id   Int
+  documento_id Int       @db.SmallInt
+  url          String    @db.VarChar(500)
+  tecnico      tecnico   @relation(fields: [tecnico_id], references: [id])
+  documento    documento @relation(fields: [documento_id], references: [id])
+
+  @@id([tecnico_id, documento_id])
+}
+
+model documento_proveedor {
+  proveedor_id Int
+  documento_id Int       @db.SmallInt
+  url          String    @db.VarChar(500)
+  proveedor    proveedor @relation(fields: [proveedor_id], references: [id])
+  documento    documento @relation(fields: [documento_id], references: [id])
+
+  @@id([proveedor_id, documento_id])
+}
+
+model historico_habilidad {
+  id               Int       @id @default(autoincrement())
+  tecnico_id       Int
+  habilidad_id     Int
+  estado           String    @db.VarChar(50)
+  fecha_movimiento DateTime  @default(now())
+  observaciones    String?   @db.Text
+  usuario_id       Int
+  tecnico          tecnico   @relation(fields: [tecnico_id], references: [id])
+  habilidad        habilidad @relation(fields: [habilidad_id], references: [id])
+  usuario          usuario   @relation(fields: [usuario_id], references: [id])
+}
+
+model historico_estado_proveedor {
+  id               Int       @id @default(autoincrement())
+  fecha_movimiento DateTime  @default(now())
+  fecha_inicio     DateTime
+  fecha_fin        DateTime?
+  sub_razon        String?   @db.VarChar(255)
+  proveedor_id     Int
+  estado_id        Int       @db.SmallInt
+  usuario_id       Int
+  proveedor        proveedor @relation(fields: [proveedor_id], references: [id])
+  estado           estado    @relation(fields: [estado_id], references: [id])
+  usuario          usuario   @relation(fields: [usuario_id], references: [id])
 }
