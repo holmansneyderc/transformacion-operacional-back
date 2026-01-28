@@ -1,14 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { providersMock } from './mock/providers.mock';
 import { ProviderQueryDto } from './dto/index';
 import { UpdateProviderDto } from './dto/index';
 import { CreateProviderDto } from './dto/index';
-import { EstadoProveedorTipo } from './interfaces/provider.interface'; 
+import { ProviderMock, EstadoProveedorTipo } from './interfaces/provider-mock.interface';
+import { providersMockData } from './mock/providers-mock-data';
 
 
 @Injectable()
 export class ProvidersService {
-  private providers = providersMock;
+  private providers: ProviderMock[] = providersMockData;
 
   private nowBogotaISO(): string {
     const date = new Date();
@@ -211,14 +211,36 @@ export class ProvidersService {
   create(dto: CreateProviderDto) {
     const fecha = this.nowBogotaISO();
 
-    const newProvider = {
+    const newProvider: ProviderMock = {
       id: this.providers.length + 1,
 
       informacionGeneral: dto.informacionGeneral,
-      representanteLegal: dto.representanteLegal,
-      sucursales: dto.sucursales,
+      
+      representanteLegal: {
+        nombre: dto.representanteLegal.nombre,
+        tipoDocumento: dto.representanteLegal.tipoDocumento,
+        documento: dto.representanteLegal.numeroDocumento,
+        celular: dto.representanteLegal.celular,
+        email: dto.representanteLegal.correo,
+        cargo: 'Representante Legal',
+      },
+      
+      sucursales: dto.sucursales.map(s => ({
+        direccion: s.direccion,
+        ciudad: s.ciudad,
+        departamento: s.departamento,
+        telefonos: s.telefonosContacto,
+      })),
+      
       habilidades: dto.habilidades,
-      documentos: dto.documentos,
+      
+      documentos: {
+        contrato: dto.documentos.contrato,
+        sagrilaft: dto.documentos.sagrilaft,
+        tratamientoDatos: dto.documentos.cartaTratamientoDatos,
+        sst: dto.documentos.sst,
+        fechaActivacion: dto.documentos.fechaActivacion,
+      },
 
       // Estado inicial ACTIVO
       estadoProveedor: {
