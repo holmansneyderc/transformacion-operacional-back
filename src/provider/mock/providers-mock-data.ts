@@ -1101,7 +1101,7 @@ const habilidadesGenerales = [
 ];
 const habilidadesEspeciales = ["Carga", "Refrigeración", "Mudanzas"];
 
-for (let i = 21; i <= 200; i++) {
+for (let i = 21; i <= 27000; i++) {
   const ciudadIndex = (i - 21) % ciudades.length;
   const lineaIndex = (i - 21) % lineasNegocio.length;
   const estadoIndex = i % 3 === 0 ? 2 : i % 5 === 0 ? 1 : 0;
