@@ -1,11 +1,11 @@
 import { IsInt, IsNotEmpty, IsString } from "class-validator";
 
-export class CreateBusinessLineDto {
-    @IsInt()
-    @IsNotEmpty()
-    id:number
-
+export class CreateCityDto {
     @IsString()
     @IsNotEmpty()
     nombre: string;
+
+    @IsInt()
+    @IsNotEmpty()
+    departamento_id: number;
 }

@@ -7,13 +7,13 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // try {
-  //   console.log("Verificando conexión a la base de datos...");
-  //   await prisma.$connect();
-  //   console.log("Base de datos conectada correctamente.");
-  // } catch (error) {
-  //   console.error("Error de conexión inicial:", error.message);
-  // }
+  try {
+    console.log("Verificando conexión a la base de datos...");
+    await prisma.$connect();
+    console.log("Base de datos conectada correctamente.");
+  } catch (error) {
+    console.error("Error de conexión inicial:", error.message);
+  }
   app.setGlobalPrefix('api');
   
   app.useGlobalPipes(new ValidationPipe({
