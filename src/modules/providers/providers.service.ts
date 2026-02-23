@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { prisma } from '../../../lib/prisma';
@@ -91,16 +91,88 @@ export class ProvidersService {
     return nuevoProveedor;
   } 
 
-  async findAll() {
+  async findAll(): Promise<Provider[]> {
     const providers = await prisma.proveedor.findMany({
-          include: { estado: true }
-        });
+      include: {
+        estado: true,
+        contactos: true,
+        sucursales: {
+          include: {
+            ciudad: true,
+            telefonos: true,
+          },
+        },
+        lineas: {
+          include: { linea: true }
+        },
+        habilidades_especiales: {
+          include: {habilidad_especial: true}
+        },
+        actividades: {
+          include: { actividad: true }
+        },
+        documentos: {
+          include: { documento: true }
+        },
+        scores: {
+          include: {habilidad: true}
+        },
+        historico_estado_proveedor: {
+          include: {
+            estado: true,
+            usuario: true,
+          }
+        }
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
 
-    return providers.map(p => new Provider(p));
+    return providers.map((p) => new Provider(p));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} provider`;
+  async findOne(id: number): Promise<Provider> {
+    const provider = await prisma.proveedor.findUnique({
+      where: { id },
+      include: {
+        estado: true,
+        contactos: true,
+        sucursales: {
+          include: {
+            ciudad: true,
+            telefonos: true,
+          },
+        },
+        lineas: {
+          include: { linea: true }
+        },
+        habilidades_especiales: {
+          include: { habilidad_especial: true }
+        },
+        actividades: {
+          include: { actividad: true }
+        },
+        documentos: {
+          include: { documento: true }
+        },
+        scores: {
+          include: { habilidad: true }
+        },
+        historico_estado_proveedor: {
+          include: {
+            estado: true,
+            usuario: true,
+          }
+        }
+      },
+    });
+
+    if (!provider) {
+      throw new NotFoundException(`El proveedor con ID ${id} no existe`);
+    }
+
+    return new Provider(provider);
   }
 
   update(id: number, updateProviderDto: UpdateProviderDto) {
