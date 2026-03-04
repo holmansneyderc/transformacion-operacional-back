@@ -12,9 +12,10 @@ import { EconomicActivityModule } from './modules/economic_activity/economic_act
 import { DocumentsModule } from './modules/documents/documents.module';
 import { ScoresModule } from './modules/scores/scores.module';
 import { HistoricStateModule } from './modules/historic_state/historic_state.module';
+import { TechnicianModule } from './modules/technician/technician.module';
 
 @Module({
-  imports: [BusinessLineModule, ProvidersModule, ContactsModule, BranchesModule, CityModule, LineProviderModule, ActivitiesProviderModule, EconomicActivityModule, DocumentsModule, ScoresModule, HistoricStateModule],
+  imports: [BusinessLineModule, ProvidersModule, ContactsModule, BranchesModule, CityModule, LineProviderModule, ActivitiesProviderModule, EconomicActivityModule, DocumentsModule, ScoresModule, HistoricStateModule, TechnicianModule],
   controllers: [AppController],
   providers: [AppService],
 })
